@@ -1,0 +1,598 @@
+
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canon Eat - 美食音乐生活顾问</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 动态背景效果 */
+        body::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(255, 119, 198, 0.2) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 20%, rgba(255, 206, 84, 0.2) 0%, transparent 50%);
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.1); }
+        }
+
+        .chat-container {
+            background: rgba(18, 18, 18, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 500px;
+            height: 750px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            padding: 24px;
+            text-align: center;
+            color: white;
+            position: relative;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header h1 {
+            font-size: 26px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 50%, #ffd700 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 13px;
+            opacity: 0.7;
+            letter-spacing: 0.5px;
+        }
+
+        .corgi-wrapper {
+            position: absolute;
+            right: 24px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .corgi-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #2d2d2d 0%, #3d3d3d 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .corgi-icon:hover {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 8px 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .chat-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            background: #0f0f0f;
+        }
+
+        .message {
+            margin-bottom: 16px;
+            animation: messageSlide 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes messageSlide {
+            from { 
+                opacity: 0; 
+                transform: translateY(20px) scale(0.95);
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .message.bot {
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .bot-avatar {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            flex-shrink: 0;
+            font-size: 20px;
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+        }
+
+        .message-content {
+            background: #1a1a1a;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 14px 18px;
+            border-radius: 20px;
+            max-width: 80%;
+            color: #e0e0e0;
+            line-height: 1.5;
+            font-size: 15px;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #3d3d3d 0%, #4d4d4d 100%);
+            color: white;
+            margin-left: auto;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .food-recommendation {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 237, 78, 0.1) 100%);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            padding: 16px;
+            border-radius: 16px;
+            margin-top: 12px;
+            color: #f0f0f0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .food-recommendation::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%);
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.5); opacity: 0; }
+        }
+
+        .music-recommendation {
+            background: linear-gradient(135deg, rgba(120, 119, 198, 0.15) 0%, rgba(255, 119, 198, 0.15) 100%);
+            border: 1px solid rgba(120, 119, 198, 0.3);
+            padding: 16px;
+            border-radius: 16px;
+            margin-top: 12px;
+            color: #f0f0f0;
+            position: relative;
+        }
+
+        .recommendation-title {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .recommendation-desc {
+            font-size: 14px;
+            opacity: 0.8;
+            line-height: 1.4;
+        }
+
+        .input-area {
+            padding: 20px 24px 24px;
+            background: #1a1a1a;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .input-field {
+            flex: 1;
+            padding: 14px 20px;
+            background: #0f0f0f;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            font-size: 15px;
+            color: white;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .input-field::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: rgba(255, 215, 0, 0.5);
+            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+            background: #1a1a1a;
+        }
+
+        .send-button {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            color: #0a0a0a;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 24px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+        }
+
+        .send-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+        }
+
+        .send-button:active {
+            transform: translateY(0);
+        }
+
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-left: 54px;
+        }
+
+        .typing-indicator.active {
+            display: flex;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background: #ffd700;
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { 
+                transform: translateY(0);
+                opacity: 0.3;
+            }
+            30% { 
+                transform: translateY(-8px);
+                opacity: 1;
+            }
+        }
+
+        /* 自定义滚动条 */
+        .chat-area::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-area::-webkit-scrollbar-track {
+            background: #0a0a0a;
+            border-radius: 4px;
+        }
+
+        .chat-area::-webkit-scrollbar-thumb {
+            background: #2d2d2d;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-area::-webkit-scrollbar-thumb:hover {
+            background: #3d3d3d;
+        }
+
+        /* 特殊效果 */
+        .sparkle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #ffd700;
+            border-radius: 50%;
+            animation: sparkle 1.5s ease-in-out infinite;
+        }
+
+        @keyframes sparkle {
+            0%, 100% { opacity: 0; transform: scale(0); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="header">
+            <h1>Canon Eat</h1>
+            <p>美食音乐生活顾问</p>
+            <div class="corgi-wrapper">
+                <div class="corgi-icon">🐕</div>
+            </div>
+        </div>
+        
+        <div class="chat-area" id="chatArea">
+            <div class="message bot">
+                <div class="bot-avatar">✨</div>
+                <div class="message-content">
+                    晚上好！我是 Canon Eat，你的专属美食音乐顾问 🌟<br><br>
+                    我可以为你：<br>
+                    • 推荐精选早餐、午餐、晚餐<br>
+                    • 搭配适合用餐氛围的音乐<br>
+                    • 分享艺术家的音乐<br><br>
+                    今天想探索什么美味？
+                </div>
+            </div>
+        </div>
+
+        <div class="typing-indicator" id="typingIndicator">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+        </div>
+        
+        <div class="input-area">
+            <input type="text" class="input-field" id="userInput" placeholder="分享你的美食心情..." />
+            <button class="send-button" onclick="sendMessage()">发送</button>
+        </div>
+    </div>
+
+    <script>
+        // 菜谱数据库
+        const foodDatabase = {
+            breakfast: [
+                { name: "法式可颂配拿铁", desc: "经典巴黎早晨，酥脆可颂搭配丝滑拿铁", vibe: "优雅" },
+                { name: "日式玉子烧定食", desc: "精致的日式早餐，包含玉子烧、味噌汤和精选小菜", vibe: "禅意" },
+                { name: "地中海早餐拼盘", desc: "新鲜番茄、羊奶酪、橄榄配全麦面包", vibe: "阳光" },
+                { name: "斯堪的纳维亚燕麦粥", desc: "北欧风格燕麦配莓果、坚果和蜂蜜", vibe: "清新" },
+                { name: "墨尔本风格早午餐", desc: "牛油果吐司配水波蛋，撒上dukkah香料", vibe: "潮流" }
+            ],
+            lunch: [
+                { name: "意式松露意面", desc: "新鲜黑松露配奶油意面，帕玛森芝士点缀", vibe: "奢华" },
+                { name: "泰式绿咖喱", desc: "椰奶绿咖喱配茉莉香米，清新香茅味", vibe: "异域" },
+                { name: "法式尼斯沙拉", desc: "金枪鱼、鸡蛋、橄榄的地中海组合", vibe: "轻盈" },
+                { name: "日式散寿司碗", desc: "新鲜刺身配寿司饭，芥末酱油调味", vibe: "精致" },
+                { name: "摩洛哥羊肉塔吉锅", desc: "慢炖羊肉配杏干、肉桂和薄荷", vibe: "温暖" }
+            ],
+            dinner: [
+                { name: "威灵顿牛排", desc: "酥皮包裹的顶级牛柳，配红酒酱汁", vibe: "盛宴" },
+                { name: "日式怀石料理", desc: "季节性的多道精致料理，展现食材本味", vibe: "艺术" },
+                { name: "秘鲁酸橘汁腌鱼", desc: "新鲜海鱼用青柠汁腌制，配红薯和玉米", vibe: "活力" },
+                { name: "法式海鲜锅", desc: "马赛鱼汤风格，多种海鲜配藏红花高汤", vibe: "海洋" },
+                { name: "印度坦都里烤鸡", desc: "香料腌制的烤鸡，配印度烤饼和酸奶酱", vibe: "热情" }
+            ]
+        };
+
+        // 音乐数据库
+        const musicDatabase = {
+            优雅: ["Billie Eilish - No Time To Die", "Lorde - Liability", "FKA twigs - cellophane"],
+            禅意: ["James Blake - Retrograde", "Bon Iver - Re: Stacks", "Moses Sumney - Doomed"],
+            阳光: ["Lorde - Solar Power", "Harry Styles - Watermelon Sugar", "Maggie Rogers - Light On"],
+            清新: ["Clairo - Sofia", "Rex Orange County - Sunflower", "Carly Rae Jepsen - Run Away With Me"],
+            潮流: ["Charli XCX - 365", "Caroline Polachek - So Hot You're Hurting My Feelings", "Rina Sawayama - XS"],
+            奢华: ["The Weeknd - Blinding Lights", "Rosalía - Malamente", "Beyoncé - Alien Superstar"],
+            异域: ["Bad Bunny - Yo Perreo Sola", "Stromae - Alors on Danse", "M.I.A. - Paper Planes"],
+            轻盈: ["Phoenix - Lisztomania", "Vampire Weekend - Oxford Comma", "HAIM - Summer Girl"],
+            精致: ["Frank Ocean - Thinkin Bout You", "Blood Orange - Chamakay", "Solange - Cranes in the Sky"],
+            温暖: ["Sufjan Stevens - Mystery of Love", "Iron & Wine - Naked As We Came", "José González - Heartbeats"],
+            盛宴: ["St. Vincent - Los Ageless", "Arctic Monkeys - 505", "Queens of the Stone Age - Make It Wit Chu"],
+            艺术: ["Björk - Jóga", "Radiohead - Daydreaming", "Arca - Desafío"],
+            活力: ["Dua Lipa - Physical", "Jessie Ware - Spotlight", "Robyn - Dancing On My Own"],
+            海洋: ["Beach House - Space Song", "Tame Impala - Breathe Deeper", "Men I Trust - Show Me How"],
+            热情: ["Christine and the Queens - Tilted", "Years & Years - Desire", "Troye Sivan - Rush"]
+        };
+
+        const chatArea = document.getElementById('chatArea');
+        const userInput = document.getElementById('userInput');
+        const typingIndicator = document.getElementById('typingIndicator');
+
+        // 获取当前时间段
+        function getTimeOfDay() {
+            const hour = new Date().getHours();
+            if (hour >= 5 && hour < 11) return '早餐';
+            else if (hour >= 11 && hour < 17) return '午餐';
+            else return '晚餐';
+        }
+
+        // 发送消息
+        function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            // 添加用户消息
+            addMessage(message, 'user');
+            userInput.value = '';
+
+            // 显示输入指示器
+            showTypingIndicator();
+
+            // 模拟延迟后回复
+            setTimeout(() => {
+                hideTypingIndicator();
+                generateResponse(message);
+            }, 1500);
+        }
+
+        // 添加消息到聊天区域
+        function addMessage(content, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            if (sender === 'bot') {
+                messageDiv.innerHTML = `
+                    <div class="bot-avatar">✨</div>
+                    <div class="message-content">${content}</div>
+                `;
+            } else {
+                messageDiv.innerHTML = `<div class="message-content">${content}</div>`;
+            }
+            
+            chatArea.appendChild(messageDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        // 生成回复
+        function generateResponse(message) {
+            const lowerMessage = message.toLowerCase();
+            let response = '';
+
+            if (lowerMessage.includes('早餐') || lowerMessage.includes('早上') || lowerMessage.includes('breakfast')) {
+                const food = getRandomItem(foodDatabase.breakfast);
+                const music = getRandomItem(musicDatabase[food.vibe]);
+                response = `
+                    为你精选的早餐推荐：
+                    <div class="food-recommendation">
+                        <div class="recommendation-title">🥐 ${food.name}</div>
+                        <div class="recommendation-desc">${food.desc}</div>
+                    </div>
+                    <div class="music-recommendation">
+                        <div class="recommendation-title">🎵 ${music}</div>
+                        <div class="recommendation-desc">完美契合${food.vibe}的早晨时光</div>
+                    </div>
+                `;
+            } else if (lowerMessage.includes('午餐') || lowerMessage.includes('中午') || lowerMessage.includes('lunch')) {
+                const food = getRandomItem(foodDatabase.lunch);
+                const music = getRandomItem(musicDatabase[food.vibe]);
+                response = `
+                    午间美味推荐：
+                    <div class="food-recommendation">
+                        <div class="recommendation-title">🍽️ ${food.name}</div>
+                        <div class="recommendation-desc">${food.desc}</div>
+                    </div>
+                    <div class="music-recommendation">
+                        <div class="recommendation-title">🎵 ${music}</div>
+                        <div class="recommendation-desc">让午餐时光更加${food.vibe}</div>
+                    </div>
+                `;
+            } else if (lowerMessage.includes('晚餐') || lowerMessage.includes('晚上') || lowerMessage.includes('dinner')) {
+                const food = getRandomItem(foodDatabase.dinner);
+                const music = getRandomItem(musicDatabase[food.vibe]);
+                response = `
+                    今晚的美食灵感：
+                    <div class="food-recommendation">
+                        <div class="recommendation-title">🍷 ${food.name}</div>
+                        <div class="recommendation-desc">${food.desc}</div>
+                    </div>
+                    <div class="music-recommendation">
+                        <div class="recommendation-title">🎵 ${music}</div>
+                        <div class="recommendation-desc">营造${food.vibe}的晚餐氛围</div>
+                    </div>
+                `;
+            } else if (lowerMessage.includes('billie') || lowerMessage.includes('eilish')) {
+                response = `Billie Eilish 的音乐就像一场深夜的梦境 🌙<br><br>从 "Ocean Eyes" 的空灵到 "Happier Than Ever" 的情感爆发，她用独特的嗓音讲述着这个时代的故事。最近在听她的哪首作品呢？`;
+            } else if (lowerMessage.includes('lorde')) {
+                response = `Lorde 是将诗意融入流行音乐的大师 ✨<br><br>从 "Royals" 的少年叛逆到 "Solar Power" 的成熟内省，每张专辑都是一次全新的艺术探索。她的音乐总能触动心灵深处。`;
+            } else if (lowerMessage.includes('charli') || lowerMessage.includes('xcx')) {
+                response = `Charli XCX 定义了未来流行音乐的声音 ⚡<br><br>"How I'm Feeling Now" 展现了她的实验精神，而 "CRASH" 则完美融合了主流与前卫。她的每首歌都是一场声音的冒险！`;
+            } else if (lowerMessage.includes('音乐') || lowerMessage.includes('music') || lowerMessage.includes('推荐')) {
+                const allMusic = Object.values(musicDatabase).flat();
+                const randomMusic = getRandomItem(allMusic);
+                const timeOfDay = getTimeOfDay();
+                response = `
+                    根据现在的时间，推荐一首适合${timeOfDay}时光的音乐：<br><br>
+                    <div class="music-recommendation">
+                        <div class="recommendation-title">🎧 ${randomMusic}</div>
+                        <div class="recommendation-desc">让音乐为你的一天增添色彩</div>
+                    </div>
+                `;
+            } else if (lowerMessage.includes('你好') || lowerMessage.includes('hi') || lowerMessage.includes('hello')) {
+                response = `你好！很高兴见到你 ✨<br><br>我是 Canon Eat，可以为你推荐美食和音乐。现在是${getTimeOfDay()}时间，要不要来点${getTimeOfDay()}推荐？`;
+            } else {
+                const suggestions = [
+                    "想知道现在适合吃什么吗？",
+                    "要不要听听 Billie Eilish 的新专辑？",
+                    "今天想探索哪种风味的美食？",
+                    "需要一些用餐音乐推荐吗？"
+                ];
+                const randomSuggestion = getRandomItem(suggestions);
+                response = `${randomSuggestion}<br><br>你可以问我：<br>• 早餐/午餐/晚餐推荐<br>• 音乐推荐<br>• 聊聊喜欢的艺术家<br><br>右上角的小柯基正在等你互动哦！🐕`;
+            }
+
+            addMessage(response, 'bot');
+        }
+
+        // 获取随机项
+        function getRandomItem(array) {
+            return array[Math.floor(Math.random() * array.length)];
+        }
+
+        // 显示输入指示器
+        function showTypingIndicator() {
+            typingIndicator.classList.add('active');
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        // 隐藏输入指示器
+        function hideTypingIndicator() {
+            typingIndicator.classList.remove('active');
+        }
+
+        // 监听回车键
+        userInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // 添加闪光效果
+        function createSparkle() {
+            const sparkle = document.createElement('div');
+            sparkle.className = 'sparkle';
+            sparkle.style.left = Math.random() * 100 + '%';
+            sparkle.style.top = Math.random() * 100 + '%';
+            sparkle.style.animationDelay = Math.random() * 2 + 's';
+            document.querySelector('.header').appendChild(sparkle);
+            
+            setTimeout(() => sparkle.remove(), 1500);
+        }
+
+        // 偶尔添加闪光效果
+        setInterval(createSparkle, 3000);
+    </script>
+</body>
+</html>
